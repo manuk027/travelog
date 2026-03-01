@@ -1,27 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { User, Mail, Phone, MapPin, Loader2, Save, Globe, Sparkles } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Loader2, Save, Lock, Eye, EyeOff, MessageSquare, ShieldCheck } from 'lucide-react';
 
 const Profile = () => {
-    const { api, user: authUser } = useAuth();
+    const { api, user: authUser, updateUser } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [userData, setUserData] = useState({
         name: '',
         email: '',
         phoneNumber: '',
-        residentialLocation: {
-            address: '',
-            coordinates: [0, 0]
-        }
+        residentialLocation: { address: '', coordinates: [0, 0] }
     });
+    const [authProvider, setAuthProvider] = useState('local');
+
+    // Change password states
+    const [pwStep, setPwStep] = useState(0); // 0=hidden, 1=phone, 2=otp, 3=newpw
+    const [pwPhone, setPwPhone] = useState('');
+    const [pwOtp, setPwOtp] = useState('');
+    const [pwNew, setPwNew] = useState('');
+    const [pwConfirm, setPwConfirm] = useState('');
+    const [pwSending, setPwSending] = useState(false);
+    const [pwChanging, setPwChanging] = useState(false);
+    const [showPw, setShowPw] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const res = await api.get('/users/me');
                 const profile = res.data.data.user;
+                setAuthProvider(profile.authProvider || 'local');
+                setPwPhone(profile.phoneNumber || '');
                 setUserData({
                     name: profile.name || '',
                     email: profile.email || '',
@@ -53,17 +63,52 @@ const Profile = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            await api.patch('/users/update-me', {
+            const res = await api.patch('/users/update-me', {
                 name: userData.name,
                 email: userData.email,
                 phoneNumber: userData.phoneNumber,
                 residentialLocation: userData.residentialLocation
             });
+            if (updateUser && res.data?.data?.user) {
+                updateUser(res.data.data.user);
+            }
             toast.success('Profile updated successfully!');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update profile');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleSendOTP = async () => {
+        if (!pwPhone.trim()) return toast.error('Please enter your WhatsApp number');
+        setPwSending(true);
+        try {
+            await api.post('/auth/send-otp', { phone: pwPhone });
+            toast.success('OTP sent to your WhatsApp!');
+            setPwStep(2);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to send OTP');
+        } finally {
+            setPwSending(false);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (!pwOtp || !pwNew || !pwConfirm) return toast.error('All fields are required');
+        if (pwNew !== pwConfirm) return toast.error('Passwords do not match');
+        if (pwNew.length < 8) return toast.error('Password must be at least 8 characters');
+        setPwChanging(true);
+        try {
+            await api.post('/auth/verify-otp-change-password', {
+                otp: pwOtp, newPassword: pwNew, confirmPassword: pwConfirm
+            });
+            toast.success('Password changed successfully! Please log in again.');
+            setPwStep(0); setPwOtp(''); setPwNew(''); setPwConfirm('');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to change password');
+        } finally {
+            setPwChanging(false);
         }
     };
 
@@ -76,110 +121,104 @@ const Profile = () => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
-            <div className="text-center mb-12">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 mb-4">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Account Settings</span>
-                </div>
-                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Your <span className="text-emerald-600">Profile</span>
-                </h1>
-                <p className="text-slate-500 font-medium mt-2">Manage your personal details and how you appear to the community.</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
-                <div className="flex flex-col items-center mb-12">
-                    <div className="w-32 h-32 p-1 bg-gradient-to-tr from-emerald-400 to-emerald-600 rounded-[2.5rem] shadow-xl shadow-emerald-200/50 mb-6">
-                        <div className="w-full h-full bg-white dark:bg-slate-800 rounded-[2.2rem] flex items-center justify-center overflow-hidden">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                {/* Minimal Header area */}
+                <div className="bg-slate-50 dark:bg-slate-800/50 pt-12 pb-8 px-8 flex flex-col items-center border-b border-slate-100 dark:border-slate-800">
+                    <div className="w-28 h-28 rounded-full shadow-inner shadow-slate-200/50 mb-5 relative group">
+                        <div className="w-full h-full bg-white dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-white dark:border-slate-800 shadow-sm">
                             <img
-                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || authUser?.username)}&background=10b981&color=fff&bold=true&size=128`}
+                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || authUser?.name || 'User')}&background=10b981&color=fff&bold=true&size=112`}
                                 alt="Avatar"
                                 className="w-full h-full object-cover"
                             />
                         </div>
                     </div>
-                    <h2 className="text-3xl font-black text-slate-800 dark:text-white">{userData.name || authUser?.username}</h2>
-                    <p className="text-slate-500 font-bold bg-slate-100 dark:bg-slate-800 px-4 py-1 rounded-full mt-2 text-sm uppercase tracking-widest">@{authUser?.username}</p>
+                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white capitalize tracking-tight">
+                        {userData.name || authUser?.name || 'Complete Your Profile'}
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-1.5 font-medium">Manage your personal information</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-2.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                        <div className="relative group">
-                            <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input
-                                type="text"
-                                name="name"
-                                value={userData.name}
-                                onChange={handleChange}
-                                placeholder="Enter your full name"
-                                className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-semibold"
-                            />
+                <div className="p-8">
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 max-w-lg mx-auto">
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Full Name</label>
+                            <div className="relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={userData.name}
+                                    onChange={handleChange}
+                                    placeholder="Enter your full name"
+                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium text-sm shadow-sm"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-2.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                        <div className="relative group">
-                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input
-                                type="email"
-                                name="email"
-                                value={userData.email}
-                                onChange={handleChange}
-                                placeholder="your@email.com"
-                                className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-semibold"
-                            />
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Email Address</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={userData.email}
+                                    onChange={handleChange}
+                                    placeholder="your@email.com"
+                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium text-sm shadow-sm"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-2.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                        <div className="relative group">
-                            <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input
-                                type="tel"
-                                name="phoneNumber"
-                                value={userData.phoneNumber}
-                                onChange={handleChange}
-                                placeholder="+1 (234) 567 890"
-                                className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-semibold"
-                            />
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Phone Number</label>
+                            <div className="relative group">
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    type="tel"
+                                    name="phoneNumber"
+                                    value={userData.phoneNumber}
+                                    onChange={handleChange}
+                                    placeholder="+1 (234) 567 890"
+                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium text-sm shadow-sm"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-2.5">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Residential Location</label>
-                        <div className="relative group">
-                            <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                            <input
-                                type="text"
-                                value={userData.residentialLocation.address}
-                                onChange={handleLocationChange}
-                                placeholder="City, Country"
-                                className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-semibold"
-                            />
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Location</label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={userData.residentialLocation.address}
+                                    onChange={handleLocationChange}
+                                    placeholder="City, Country"
+                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium text-sm shadow-sm"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="md:col-span-2 pt-6">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-3xl shadow-2xl shadow-emerald-200/50 hover:shadow-emerald-300/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed text-lg"
-                        >
-                            {saving ? (
-                                <Loader2 className="w-6 h-6 animate-spin" />
-                            ) : (
-                                <>
-                                    <Save className="w-5 h-5" />
-                                    <span>Update Profile Info</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </form>
+                        <div className="pt-6 pb-2">
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 disabled:opacity-70 disabled:cursor-not-allowed text-sm"
+                            >
+                                {saving ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        <span>Save Changes</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

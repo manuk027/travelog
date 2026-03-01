@@ -190,6 +190,31 @@ exports.updatePlaceStatus = catchAsync(async (req, res, next) => {
     });
 });
 
+// Admin: update all place details
+exports.updatePlace = catchAsync(async (req, res, next) => {
+    const allowedFields = ['name', 'description', 'district', 'state', 'country', 'pincode', 'status'];
+    const updates = {};
+    allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) updates[field] = req.body[field];
+    });
+
+    const place = await Place.findByIdAndUpdate(
+        req.params.id,
+        updates,
+        { new: true, runValidators: true }
+    ).populate('createdBy', 'name username');
+
+    if (!place) {
+        return next(new AppError('No place found with that ID', 404));
+    }
+
+    res.status(200).json({
+        success: true,
+        message: 'Place updated successfully',
+        data: { place }
+    });
+});
+
 exports.deletePlace = catchAsync(async (req, res, next) => {
     const place = await Place.findByIdAndDelete(req.params.id);
 
@@ -200,5 +225,39 @@ exports.deletePlace = catchAsync(async (req, res, next) => {
     res.status(204).json({
         success: true,
         data: null
+    });
+});
+
+// External registered user: contribute a single photo to any approved place (max 2MB)
+exports.contributePhoto = catchAsync(async (req, res, next) => {
+    const place = await Place.findById(req.params.id);
+
+    if (!place) {
+        return next(new AppError('No place found with that ID', 404));
+    }
+
+    if (place.status !== 'approved') {
+        return next(new AppError('You can only contribute photos to approved places', 400));
+    }
+
+    // Check the user has visited the place (optional but user requested)
+    const user = await User.findById(req.user.id);
+    const hasVisited = user.visitedPlaces.some(p => p.toString() === req.params.id);
+    if (!hasVisited) {
+        return next(new AppError('You must have visited this place to contribute a photo', 403));
+    }
+
+    if (!req.file) {
+        return next(new AppError('Please upload a photo (max 2MB)', 400));
+    }
+
+    const photoUrl = req.file.path;
+    place.photos.push(photoUrl);
+    await place.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Photo contributed successfully',
+        data: { photoUrl }
     });
 });

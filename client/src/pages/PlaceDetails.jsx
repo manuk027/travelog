@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import MapViewer from '../components/MapViewer';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
-import { Loader2, MapPin, Navigation, Calendar, User as UserIcon, CheckCircle2, Star, Trash2, Copy, Check } from 'lucide-react';
+import { Loader2, MapPin, Navigation, Calendar, User as UserIcon, CheckCircle2, Star, Trash2, Copy, Check, Heart, Pencil } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const PlaceDetails = () => {
@@ -17,6 +17,8 @@ const PlaceDetails = () => {
     const [reviews, setReviews] = useState([]);
     const [isVisited, setIsVisited] = useState(false);
     const [visitedLoading, setVisitedLoading] = useState(false);
+    const [isDream, setIsDream] = useState(false);
+    const [dreamLoading, setDreamLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
@@ -42,8 +44,13 @@ const PlaceDetails = () => {
 
                 if (user && placeRes.status === 'fulfilled') {
                     const userRes = await api.get('/users/me');
-                    const visited = userRes.data.data.user.visitedPlaces.some(p => p._id === id);
+                    const profileData = userRes.data.data.user;
+
+                    const visited = profileData.visitedPlaces?.some(p => p._id === id || p === id);
                     setIsVisited(visited);
+
+                    const dream = profileData.dreamPlaces?.some(p => p._id === id || p === id);
+                    setIsDream(dream);
                 }
             } catch (error) {
                 toast.error(error.response?.data?.message || 'Something went wrong');
@@ -111,6 +118,21 @@ const PlaceDetails = () => {
             toast.error(error.response?.data?.message || 'Failed to update visited status');
         } finally {
             setVisitedLoading(false);
+        }
+    };
+
+    const handleToggleDream = async () => {
+        if (!user) return toast.info('Please log in to save to your dream places');
+
+        setDreamLoading(true);
+        try {
+            const res = await api.post(`/users/toggle-dream/${id}`);
+            setIsDream(!isDream);
+            toast.success(res.data.message);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update dream status');
+        } finally {
+            setDreamLoading(false);
         }
     };
 
@@ -245,6 +267,7 @@ const PlaceDetails = () => {
                                 placeId={id}
                                 api={api}
                                 onReviewSubmitted={handleReviewSubmitted}
+                                isVisited={isVisited}
                             />
                         )}
 
@@ -259,10 +282,22 @@ const PlaceDetails = () => {
                 {/* Sidebar (Map & Actions) */}
                 <div className="space-y-6">
                     <div className="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                            <Navigation className="w-5 h-5 text-primary-500" />
-                            Location Area
-                        </h3>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <Navigation className="w-5 h-5 text-primary-500" />
+                                Location Area
+                            </h3>
+                            {place.plusCode && (
+                                <button
+                                    onClick={handleCopyPlusCode}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 transition-colors shadow-sm"
+                                    title="Copy Google Plus Code"
+                                >
+                                    <span className="text-xs font-bold font-mono tracking-wide">{place.plusCode}</span>
+                                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                </button>
+                            )}
+                        </div>
 
                         <div className="h-[300px] mb-4">
                             {place.location?.coordinates ? (
@@ -286,21 +321,6 @@ const PlaceDetails = () => {
                                     </span>
                                 </div>
                             )}
-                            {place.plusCode && (
-                                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl flex items-center justify-between group/pc">
-                                    <div className="space-y-0.5">
-                                        <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Plus Code</p>
-                                        <p className="text-sm font-bold text-blue-900 dark:text-blue-200 font-mono">{place.plusCode}</p>
-                                    </div>
-                                    <button
-                                        onClick={handleCopyPlusCode}
-                                        className="p-2 hover:bg-white dark:hover:bg-blue-800 rounded-lg transition-all text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-700"
-                                        title="Copy Plus Code"
-                                    >
-                                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            )}
                         </div>
 
                         <a
@@ -315,6 +335,24 @@ const PlaceDetails = () => {
                         >
                             Get Directions
                         </a>
+
+                        <button
+                            onClick={handleToggleDream}
+                            disabled={dreamLoading}
+                            className={`mt-4 w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border-2 ${isDream
+                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-500 hover:text-emerald-600'
+                                } disabled:opacity-50`}
+                        >
+                            {dreamLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <Heart className={`w-5 h-5 ${isDream ? 'fill-emerald-600 text-emerald-600' : ''}`} />
+                                    <span>{isDream ? 'Saved to Dreams' : 'Save to Dreams'}</span>
+                                </>
+                            )}
+                        </button>
 
                         <button
                             onClick={handleToggleVisited}
@@ -335,13 +373,22 @@ const PlaceDetails = () => {
                         </button>
 
                         {user?.role === 'admin' && (
-                            <button
-                                onClick={handleDeletePlace}
-                                className="mt-4 w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border-2 bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
-                            >
-                                <Trash2 className="w-5 h-5" />
-                                <span>Delete Location</span>
-                            </button>
+                            <>
+                                <Link
+                                    to={`/places/${id}/edit`}
+                                    className="mt-4 w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border-2 bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
+                                >
+                                    <Pencil className="w-4 h-4" />
+                                    <span>Edit Place Details</span>
+                                </Link>
+                                <button
+                                    onClick={handleDeletePlace}
+                                    className="mt-4 w-full py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border-2 bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                    <span>Delete Location</span>
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>

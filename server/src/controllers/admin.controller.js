@@ -9,26 +9,72 @@ exports.getDashboardStats = catchAsync(async (req, res, next) => {
     const totalPlaces = await Place.countDocuments();
     const pendingApprovals = await Place.countDocuments({ status: 'pending' });
 
-    // Get upload activities grouped by day (for the last 30 days)
+    // 30 days ago date
+    const thirtyDaysAgo = new Date(new Date().setDate(new Date().getDate() - 30));
+
+    // Uploads activity over time
     const uploadsOverTime = await Place.aggregate([
-        {
-            $match: {
-                createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) }
-            }
-        },
+        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
         {
             $group: {
-                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                _id: { $dateToString: { format: '%m-%d', date: '$createdAt' } },
                 count: { $sum: 1 }
             }
         },
         { $sort: { _id: 1 } }
     ]);
 
+    // User registrations over time
+    const usersOverTime = await User.aggregate([
+        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%m-%d', date: '$createdAt' } },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { _id: 1 } }
+    ]);
+
+    // Places by status
+    const placesByStatus = await Place.aggregate([
+        {
+            $group: {
+                _id: '$status',
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    // Top Users (most places uploaded)
+    const topUsers = await Place.aggregate([
+        { $group: { _id: '$createdBy', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 3 },
+        {
+            $lookup: {
+                from: 'users',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: '$user' },
+        {
+            $project: {
+                _id: 1,
+                count: 1,
+                name: '$user.name',
+                username: '$user.username',
+                email: '$user.email'
+            }
+        }
+    ]);
+
     const recentActivities = await Place.find()
         .sort('-createdAt')
         .limit(5)
-        .populate('createdBy', 'username email');
+        .populate('createdBy', 'name username email');
 
     res.status(200).json({
         success: true,
@@ -38,6 +84,9 @@ exports.getDashboardStats = catchAsync(async (req, res, next) => {
                 totalPlaces,
                 pendingApprovals,
                 uploadsOverTime,
+                usersOverTime,
+                placesByStatus,
+                topUsers,
                 recentActivities
             }
         }

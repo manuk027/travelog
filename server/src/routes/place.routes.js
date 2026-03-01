@@ -37,10 +37,14 @@ router.use(authMiddleware.protect);
 
 router.post('/', uploadMiddleware.uploadPlaceMedia, placeController.createPlace);
 
+// Visitor photo contribution (authenticated, image only, 1 file, 2MB limit)
+router.post('/:id/contribute-photo', uploadMiddleware.uploadSinglePhoto, placeController.contributePhoto);
+
 // Admin routes
 router.use(authMiddleware.restrictTo('admin'));
 
 router.patch('/:id/status', placeController.updatePlaceStatus);
+router.patch('/:id', placeController.updatePlace);
 router.delete('/:id', placeController.deletePlace);
 
 module.exports = router;

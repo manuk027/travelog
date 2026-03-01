@@ -22,6 +22,8 @@ import PlaceDetails from './pages/PlaceDetails';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import VisitedPlaces from './pages/VisitedPlaces';
+import DreamPlaces from './pages/DreamPlaces';
+import EditPlace from './pages/EditPlace';
 
 // Replace with your actual client ID in production (e.g., from Vite env)
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'dummy-client-id';
@@ -53,12 +55,14 @@ function App() {
                                         <Route element={<ProtectedRoute />}>
                                             <Route path="/add-place" element={<AddPlace />} />
                                             <Route path="/visited" element={<VisitedPlaces />} />
+                                            <Route path="/dream-places" element={<DreamPlaces />} />
                                             <Route path="/profile" element={<Profile />} />
                                         </Route>
 
                                         {/* Protected Admin Routes */}
                                         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                                             <Route path="/admin/*" element={<AdminDashboard />} />
+                                            <Route path="/places/:id/edit" element={<EditPlace />} />
                                         </Route>
 
                                         {/* Fallback */}

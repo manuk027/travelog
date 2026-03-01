@@ -1,0 +1,1 @@
+{"success":false,"status":"fail","error":{"statusCode":401,"status":"fail","isOperational":true},"message":"Incorrect email or password","stack":"Error: Incorrect email or password\n    at /Users/manukrishna/Desktop/Manu/Projects/travelLocation/server/src/controllers/auth.controller.js:51:21\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"}

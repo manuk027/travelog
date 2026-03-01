@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Star, Send, Loader2 } from 'lucide-react';
+import { Star, Send, Loader2, MapPin } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-const ReviewForm = ({ placeId, onReviewSubmitted, api }) => {
+const ReviewForm = ({ placeId, onReviewSubmitted, api, isVisited }) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [comment, setComment] = useState('');
@@ -30,6 +30,20 @@ const ReviewForm = ({ placeId, onReviewSubmitted, api }) => {
         }
     };
 
+    if (!isVisited) {
+        return (
+            <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-sm text-center">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                    <MapPin className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Have you been here?</h3>
+                <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+                    To help keep reviews authentic and helpful, we ask that you mark this location as visited before sharing your experience.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Leave a Review</h3>
@@ -46,8 +60,8 @@ const ReviewForm = ({ placeId, onReviewSubmitted, api }) => {
                         >
                             <Star
                                 className={`w-8 h-8 ${(hover || rating) >= star
-                                        ? 'fill-amber-400 text-amber-400'
-                                        : 'text-slate-300 dark:text-slate-600'
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-slate-300 dark:text-slate-600'
                                     }`}
                             />
                         </button>

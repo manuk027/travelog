@@ -30,14 +30,25 @@ const AddPlace = () => {
     const handlePhotoChange = (e) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
-            const validFiles = [];
+            const remaining = 4 - photos.length;
 
+            if (remaining <= 0) {
+                toast.warning('You can upload a maximum of 4 photos.');
+                return;
+            }
+
+            const validFiles = [];
             for (const file of selectedFiles) {
                 if (file.size > 2 * 1024 * 1024) {
-                    toast.error(`Image "${file.name}" is too large (max 2MB)`);
+                    toast.error(`"${file.name}" exceeds 2MB limit`);
                     continue;
                 }
-                validFiles.push(file);
+                if (validFiles.length < remaining) {
+                    validFiles.push(file);
+                } else {
+                    toast.warning('Max 4 photos allowed. Some files were skipped.');
+                    break;
+                }
             }
 
             if (validFiles.length > 0) {
@@ -49,21 +60,13 @@ const AddPlace = () => {
     };
 
     const handleVideoChange = (e) => {
-        if (e.target.files) {
-            const selectedFiles = Array.from(e.target.files);
-            const validFiles = [];
-
-            for (const file of selectedFiles) {
-                if (file.size > 10 * 1024 * 1024) {
-                    toast.error(`Video "${file.name}" is too large (max 10MB)`);
-                    continue;
-                }
-                validFiles.push(file);
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error(`Video exceeds 10MB limit`);
+                return;
             }
-
-            if (validFiles.length > 0) {
-                setVideos((prev) => [...prev, ...validFiles]);
-            }
+            setVideos([file]); // Only 1 video allowed
         }
     };
 
@@ -248,14 +251,19 @@ const AddPlace = () => {
                                 {/* Photos */}
                                 <div className="space-y-4">
                                     <label className="block text-sm font-semibold text-slate-700 ml-1">
-                                        Photos (Required)
+                                        Photos <span className="text-slate-400 font-normal">({photos.length}/4, max 2MB each)</span>
                                     </label>
                                     <div
-                                        onClick={() => document.getElementById('photo-upload').click()}
-                                        className="h-40 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl group hover:border-emerald-500 hover:bg-emerald-50/10 transition-all cursor-pointer"
+                                        onClick={() => photos.length < 4 && document.getElementById('photo-upload').click()}
+                                        className={`h-40 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl transition-all ${photos.length >= 4
+                                                ? 'border-slate-100 bg-slate-50 cursor-not-allowed opacity-50'
+                                                : 'border-slate-200 group hover:border-emerald-500 hover:bg-emerald-50/10 cursor-pointer'
+                                            }`}
                                     >
                                         <UploadCloud className="h-10 w-10 text-slate-300 group-hover:text-emerald-500 group-hover:scale-110 transition-all" />
-                                        <p className="mt-2 text-sm text-slate-400 group-hover:text-emerald-600 font-medium">Click to upload images</p>
+                                        <p className="mt-2 text-sm text-slate-400 group-hover:text-emerald-600 font-medium">
+                                            {photos.length >= 4 ? 'Max 4 photos reached' : 'Click to upload images'}
+                                        </p>
                                         <input
                                             id="photo-upload"
                                             type="file"
@@ -267,16 +275,16 @@ const AddPlace = () => {
                                     </div>
 
                                     {previewUrls.length > 0 && (
-                                        <div className="grid grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-4 gap-2">
                                             {previewUrls.map((url, index) => (
-                                                <div key={index} className="relative group aspect-square rounded-2xl overflow-hidden border border-slate-100">
+                                                <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-100">
                                                     <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
                                                     <button
                                                         type="button"
                                                         onClick={() => removePhoto(index)}
-                                                        className="absolute top-1.5 right-1.5 p-1 bg-white/90 text-rose-500 rounded-lg shadow-sm backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        className="absolute top-1 right-1 p-1 bg-white/90 text-rose-500 rounded-md shadow-sm backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
                                                     >
-                                                        <X className="w-3.5 h-3.5" />
+                                                        <X className="w-3 h-3" />
                                                     </button>
                                                 </div>
                                             ))}
@@ -286,29 +294,36 @@ const AddPlace = () => {
 
                                 {/* Video */}
                                 <div className="space-y-4">
-                                    <label className="block text-sm font-semibold text-slate-700 ml-1 flex items-center gap-1.5">
-                                        Videos (Optional)
+                                    <label className="block text-sm font-semibold text-slate-700 ml-1">
+                                        Video <span className="text-slate-400 font-normal">(1 file, max 10MB)</span>
                                     </label>
                                     <div
-                                        onClick={() => document.getElementById('video-upload').click()}
-                                        className="h-40 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl group hover:border-emerald-500 hover:bg-emerald-50/10 transition-all cursor-pointer"
+                                        onClick={() => !videos.length && document.getElementById('video-upload').click()}
+                                        className={`h-40 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl transition-all ${videos.length
+                                                ? 'border-emerald-200 bg-emerald-50 cursor-default'
+                                                : 'border-slate-200 group hover:border-emerald-500 hover:bg-emerald-50/10 cursor-pointer'
+                                            }`}
                                     >
                                         <Video className="h-10 w-10 text-slate-300 group-hover:text-emerald-500 group-hover:scale-110 transition-all" />
-                                        <p className="mt-2 text-sm text-slate-400 group-hover:text-emerald-600 font-medium">Click to upload videos</p>
+                                        <p className="mt-2 text-sm text-slate-400 group-hover:text-emerald-600 font-medium">
+                                            {videos.length ? `✓ ${videos[0].name}` : 'Click to upload video'}
+                                        </p>
                                         <input
                                             id="video-upload"
                                             type="file"
-                                            accept="video/mp4, video/mov"
-                                            multiple
+                                            accept="video/mp4,video/quicktime"
                                             onChange={handleVideoChange}
                                             className="sr-only"
                                         />
                                     </div>
                                     {videos.length > 0 && (
-                                        <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
-                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Videos Selected</span>
-                                            <span className="text-sm font-bold text-emerald-600">{videos.length}</span>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setVideos([])}
+                                            className="flex items-center gap-1.5 text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                                        >
+                                            <X className="w-3 h-3" /> Remove video
+                                        </button>
                                     )}
                                 </div>
                             </div>

@@ -24,6 +24,23 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage: storage });
 
 exports.uploadPlaceMedia = upload.fields([
-    { name: 'photos', maxCount: 10 },
-    { name: 'videos', maxCount: 5 }
+    { name: 'photos', maxCount: 4 },   // max 4 photos per place
+    { name: 'videos', maxCount: 1 }    // max 1 video per place
 ]);
+
+// For external visitor photo contributions (1 image, images only)
+const imageOnlyStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => ({
+        folder: 'travel-places/contributions',
+        resource_type: 'image',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+    })
+});
+
+const uploadImage = multer({
+    storage: imageOnlyStorage,
+    limits: { fileSize: 2 * 1024 * 1024 } // 2MB hard limit
+});
+
+exports.uploadSinglePhoto = uploadImage.single('photo');

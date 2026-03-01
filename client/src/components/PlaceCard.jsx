@@ -60,10 +60,10 @@ const PlaceCard = ({ place }) => {
                     {place.createdBy && (
                         <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800/50 mt-auto">
                             <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                                {place.createdBy.username?.charAt(0).toUpperCase() || 'U'}
+                                {(place.createdBy.name || place.createdBy.username)?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
-                            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 truncate">
-                                {place.createdBy.username || 'Unknown'}
+                            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 truncate capitalize">
+                                {place.createdBy.name || place.createdBy.username || 'Unknown'}
                             </span>
                         </div>
                     )}

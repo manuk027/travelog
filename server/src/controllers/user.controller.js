@@ -3,7 +3,9 @@ const AppError = require('../utils/AppError');
 
 exports.getMe = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id).populate('visitedPlaces');
+        const user = await User.findById(req.user.id)
+            .populate('visitedPlaces')
+            .populate('dreamPlaces');
         res.status(200).json({
             status: 'success',
             data: { user }
@@ -55,6 +57,31 @@ exports.toggleVisited = async (req, res, next) => {
             status: 'success',
             message: isVisited ? 'Removed from visited' : 'Marked as visited',
             data: { visitedPlaces: user.visitedPlaces }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.toggleDreamPlace = async (req, res, next) => {
+    try {
+        const { placeId } = req.params;
+        const user = await User.findById(req.user.id);
+
+        const isDream = user.dreamPlaces.includes(placeId);
+
+        if (isDream) {
+            user.dreamPlaces.pull(placeId);
+        } else {
+            user.dreamPlaces.push(placeId);
+        }
+
+        await user.save({ validateBeforeSave: false });
+
+        res.status(200).json({
+            status: 'success',
+            message: isDream ? 'Removed from Dream Places' : 'Added to Dream Places',
+            data: { dreamPlaces: user.dreamPlaces }
         });
     } catch (err) {
         next(err);

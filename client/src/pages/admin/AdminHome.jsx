@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Users, MapPin, CheckSquare, Activity, Loader2 } from 'lucide-react';
+import { Users, MapPin, CheckSquare, Activity, Loader2, TrendingUp, AlertCircle, Award } from 'lucide-react';
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend
+} from 'recharts';
 
 const AdminHome = () => {
     const { api } = useAuth();
@@ -23,65 +27,213 @@ const AdminHome = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-full">
-                <Loader2 className="w-10 h-10 animate-spin text-primary-500" />
+            <div className="flex justify-center items-center h-full min-h-[50vh]">
+                <Loader2 className="w-12 h-12 animate-spin text-emerald-500" />
             </div>
         );
     }
 
     const statCards = [
-        { name: 'Total Users', value: stats?.totalUsers || 0, icon: <Users className="w-8 h-8 text-emerald-600" />, bg: 'bg-emerald-50' },
-        { name: 'Total Places', value: stats?.totalPlaces || 0, icon: <MapPin className="w-8 h-8 text-emerald-500" />, bg: 'bg-emerald-50' },
-        { name: 'Pending Approvals', value: stats?.pendingApprovals || 0, icon: <CheckSquare className="w-8 h-8 text-amber-500" />, bg: 'bg-amber-50' }
+        { name: 'Total Users', value: stats?.totalUsers || 0, icon: <Users className="w-7 h-7 text-emerald-600" />, bg: 'bg-emerald-100', text: 'text-emerald-700' },
+        { name: 'Total Places', value: stats?.totalPlaces || 0, icon: <MapPin className="w-7 h-7 text-blue-600" />, bg: 'bg-blue-100', text: 'text-blue-700' },
+        { name: 'Pending Approvals', value: stats?.pendingApprovals || 0, icon: <CheckSquare className="w-7 h-7 text-amber-600" />, bg: 'bg-amber-100', text: 'text-amber-700' }
     ];
 
+    // Prepare Line Chart Data (Merging Users and Places)
+    const combinedDataMap = new Map();
+
+    if (stats?.uploadsOverTime) {
+        stats.uploadsOverTime.forEach(item => {
+            combinedDataMap.set(item._id, { date: item._id, Places: item.count, Users: 0 });
+        });
+    }
+
+    if (stats?.usersOverTime) {
+        stats.usersOverTime.forEach(item => {
+            if (combinedDataMap.has(item._id)) {
+                combinedDataMap.get(item._id).Users = item.count;
+            } else {
+                combinedDataMap.set(item._id, { date: item._id, Places: 0, Users: item.count });
+            }
+        });
+    }
+
+    const chartData = Array.from(combinedDataMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    // Prepare Pie Chart Data
+    const STATUS_COLORS = {
+        approved: '#10b981', // emerald-500
+        pending: '#f59e0b',  // amber-500
+        rejected: '#ef4444'  // rose-500
+    };
+
+    const pieData = stats?.placesByStatus?.map(item => ({
+        name: item._id.charAt(0).toUpperCase() + item._id.slice(1),
+        value: item.count,
+        color: STATUS_COLORS[item._id] || '#94a3b8'
+    })) || [];
+
     return (
-        <div className="animate-fade-in space-y-8">
+        <div className="animate-fade-in space-y-6 pb-8">
             <div>
-                <h1 className="text-3xl font-black text-slate-800 tracking-tight">Admin Dashboard</h1>
-                <p className="mt-2 text-slate-400 font-medium">Welcome back. Here's what's happening today.</p>
+                <h1 className="text-2xl font-black text-slate-800 tracking-tight">Admin Dashboard</h1>
+                <p className="mt-1 text-sm text-slate-500 font-medium">Welcome back. Here's your platform overview.</p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Top Stat Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {statCards.map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-[2rem] flex items-center gap-4 border border-slate-100 shadow-sm transition-all hover:shadow-md">
-                        <div className={`p-4 rounded-2xl ${stat.bg}`}>
+                    <div key={i} className="bg-white p-4 rounded-2xl flex items-center gap-4 border border-slate-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+                        <div className={`p-3 rounded-xl ${stat.bg} ${stat.text}`}>
                             {stat.icon}
                         </div>
                         <div>
-                            <p className="text-sm font-semibold text-slate-400">{stat.name}</p>
-                            <h3 className="text-3xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{stat.name}</p>
+                            <h3 className="text-2xl font-black text-slate-800 tracking-tight mt-0.5">{stat.value}</h3>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {stats?.uploadsOverTime && stats.uploadsOverTime.length > 0 && (
-                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-800 pb-6 border-b border-slate-50">
-                        <Activity className="w-6 h-6 text-emerald-500" />
-                        <h3 className="text-xl font-bold tracking-tight">Upload Activity</h3>
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Main Area Chart */}
+                <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                                <TrendingUp className="w-4 h-4" />
+                            </div>
+                            <h3 className="text-base font-bold tracking-tight text-slate-800">Growth (30 Days)</h3>
+                        </div>
                     </div>
 
-                    <div className="h-64 flex items-end gap-3 pt-8 pb-4">
-                        {stats.uploadsOverTime.map((item, index) => {
-                            const maxCount = Math.max(...stats.uploadsOverTime.map(i => i.count));
-                            const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                            return (
-                                <div key={index} className="flex-1 flex flex-col items-center justify-end gap-2 group relative">
-                                    <div className="w-full bg-emerald-500/10 rounded-t-xl group-hover:bg-emerald-500 transition-all duration-300" style={{ height: `${height}%`, minHeight: '8px' }}></div>
-                                    <span className="text-[10px] text-slate-300 font-bold mt-2 hidden lg:block uppercase tracking-tighter">
-                                        {item._id.substring(5)}
-                                    </span>
-                                    <div className="absolute -top-10 bg-slate-800 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100 pointer-events-none z-10 shadow-lg">
-                                        {item.count} uploads
-                                    </div>
-                                </div>
-                            )
-                        })}
+                    <div className="h-[280px] w-full">
+                        {chartData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorPlaces" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                                    <RechartsTooltip
+                                        contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                                    />
+                                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }} />
+                                    <Area type="monotone" dataKey="Users" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
+                                    <Area type="monotone" dataKey="Places" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPlaces)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
+                                <Activity className="w-8 h-8 opacity-20" />
+                                <p className="text-sm font-medium">No activity data</p>
+                            </div>
+                        )}
                     </div>
                 </div>
-            )}
+
+                {/* Right Column: Donut & Top Users */}
+                <div className="space-y-6">
+
+                    {/* Donut Chart: Places Status */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-2 pb-4 mb-2 border-b border-slate-100">
+                            <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+                                <AlertCircle className="w-4 h-4" />
+                            </div>
+                            <h3 className="text-base font-bold tracking-tight text-slate-800">Places Status</h3>
+                        </div>
+
+                        <div className="h-[200px] w-full flex items-center justify-center">
+                            {pieData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={pieData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={50}
+                                            outerRadius={70}
+                                            paddingAngle={4}
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <RechartsTooltip
+                                            contentStyle={{ borderRadius: '0.75rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                                            itemStyle={{ fontWeight: 'bold' }}
+                                        />
+                                        <Legend iconType="circle" layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px' }} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <p className="text-slate-400 text-sm font-medium">No places data</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Top Contributors */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+                            <div className="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
+                                <Award className="w-4 h-4" />
+                            </div>
+                            <h3 className="text-base font-bold tracking-tight text-slate-800">Top Contributors</h3>
+                        </div>
+
+                        <div className="space-y-4">
+                            {stats?.topUsers && stats.topUsers.length > 0 ? (
+                                stats.topUsers.map((user, idx) => (
+                                    <div key={user._id} className="flex items-center justify-between group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative">
+                                                <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden ring-2 ring-white shadow-sm group-hover:ring-emerald-100 transition-all">
+                                                    <img
+                                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username)}&background=random&color=fff&bold=true`}
+                                                        alt="Avatar"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                {idx === 0 && (
+                                                    <div className="absolute -top-1 -right-1 bg-yellow-400 w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-sm text-yellow-900">
+                                                        <span className="text-[8px] font-black">1</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800 capitalize truncate max-w-[120px]">{user.name || user.username}</p>
+                                                <p className="text-[10px] font-semibold text-slate-400 truncate max-w-[120px]">{user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-black text-xs border border-emerald-100">
+                                                {user.count} <span className="text-[8px] ml-1 font-bold text-emerald-600/70">PLCS</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-slate-400 text-sm font-medium text-center py-2">No contributors yet.</p>
+                            )}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     );
 };

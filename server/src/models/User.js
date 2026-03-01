@@ -5,8 +5,6 @@ const userSchema = new mongoose.Schema(
     {
         username: {
             type: String,
-            required: [true, 'Please provide a username'],
-            unique: true,
             trim: true
         },
         email: {
@@ -26,6 +24,7 @@ const userSchema = new mongoose.Schema(
         },
         name: {
             type: String,
+            required: [true, 'Please provide a full name'],
             trim: true
         },
         phoneNumber: {
@@ -45,6 +44,12 @@ const userSchema = new mongoose.Schema(
                 ref: 'Place'
             }
         ],
+        dreamPlaces: [
+            {
+                type: mongoose.Schema.ObjectId,
+                ref: 'Place'
+            }
+        ],
         role: {
             type: String,
             enum: ['user', 'admin'],
@@ -58,6 +63,15 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['local', 'google'],
             default: 'local'
+        },
+        // OTP for password change via WhatsApp
+        otpHash: {
+            type: String,
+            select: false
+        },
+        otpExpires: {
+            type: Date,
+            select: false
         }
     },
     {
@@ -92,10 +106,9 @@ userSchema.statics.seedAdmin = async function () {
     const adminExists = await this.findOne({ role: 'admin' });
     if (!adminExists) {
         await this.create({
-            username: 'admin',
             email: 'admin@test.com',
             password: 'Admin@123',
-            name: 'Admin User',
+            name: 'TraveLog',
             role: 'admin',
             authProvider: 'local'
         });

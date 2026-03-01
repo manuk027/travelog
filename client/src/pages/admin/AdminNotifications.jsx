@@ -60,35 +60,35 @@ const AdminNotifications = () => {
                 <p className="mt-2 text-slate-400 font-medium">Activity alerts and system notifications.</p>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
                 {notifications.length === 0 ? (
-                    <div className="p-20 text-center flex flex-col items-center justify-center text-slate-400 font-medium">
-                        <Bell className="w-12 h-12 text-slate-100 mb-4" />
+                    <div className="p-10 text-center flex flex-col items-center justify-center text-slate-400 text-sm font-medium">
+                        <Bell className="w-8 h-8 text-slate-100 mb-3" />
                         No notifications at this time.
                     </div>
                 ) : (
                     notifications.map((notification) => (
                         <div
                             key={notification._id}
-                            className={`p-6 sm:p-8 flex items-start gap-6 transition-all duration-300 ${notification.isRead ? 'bg-transparent' : 'bg-emerald-50/30'
+                            className={`p-4 sm:p-5 flex items-start gap-4 transition-all duration-300 ${notification.isRead ? 'bg-transparent' : 'bg-emerald-50/30'
                                 }`}
                         >
-                            <div className={`mt-2 flex-shrink-0 w-2.5 h-2.5 rounded-full ${notification.isRead ? 'bg-transparent border border-slate-100' : 'bg-emerald-500 shadow-glow shadow-emerald-200'}`} />
+                            <div className={`mt-1.5 flex-shrink-0 w-2 h-2 rounded-full ${notification.isRead ? 'bg-transparent border border-slate-100' : 'bg-emerald-500 shadow-glow shadow-emerald-200'}`} />
 
                             <div className="flex-1">
-                                <p className={`text-slate-800 leading-relaxed ${notification.isRead ? 'text-slate-500' : 'font-bold text-lg'}`}>
+                                <p className={`text-sm text-slate-800 leading-relaxed max-w-4xl ${notification.isRead ? 'text-slate-500' : 'font-bold'}`}>
                                     {notification.message}
                                 </p>
-                                <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                                <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                         {new Date(notification.createdAt).toLocaleString()}
                                     </span>
 
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
                                         {notification.type === 'new_place' && (
                                             <Link
                                                 to="/admin/approvals"
-                                                className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                                                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-all shadow-sm"
                                             >
                                                 Review
                                             </Link>
@@ -97,9 +97,9 @@ const AdminNotifications = () => {
                                         {!notification.isRead && (
                                             <button
                                                 onClick={() => markAsRead(notification._id)}
-                                                className="flex items-center gap-2 text-xs font-black text-slate-400 hover:text-emerald-600 uppercase tracking-widest transition-colors"
+                                                className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-emerald-600 uppercase tracking-wider transition-colors"
                                             >
-                                                <CheckCircle2 className="w-4 h-4" />
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
                                                 Mark read
                                             </button>
                                         )}

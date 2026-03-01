@@ -10,6 +10,11 @@ exports.createReview = catchAsync(async (req, res, next) => {
     const place = await Place.findById(placeId);
     if (!place) return next(new AppError('Place not found', 404));
 
+    // Check if user has visited the place
+    if (!req.user.visitedPlaces.includes(placeId)) {
+        return next(new AppError('You must visit this place before you can review it', 403));
+    }
+
     const review = await Review.create({
         user: req.user.id,
         place: placeId,
@@ -22,7 +27,6 @@ exports.createReview = catchAsync(async (req, res, next) => {
         data: { review }
     });
 });
-
 exports.getReviewsForPlace = catchAsync(async (req, res, next) => {
     const { placeId } = req.params;
     const reviews = await Review.find({ place: placeId }).sort('-createdAt');

@@ -23,10 +23,15 @@ const Navbar = () => {
     ];
 
     if (user) {
-        navLinks.push({ name: 'Add Place', path: '/add-place' });
-        navLinks.push({ name: 'Visited Places', path: '/visited' });
-        navLinks.push({ name: 'Profile', path: '/profile' });
+        if (user.role === 'user') {
+            navLinks.push({ name: 'Add Place', path: '/add-place' });
+            navLinks.push({ name: 'Visited Places', path: '/visited' });
+            navLinks.push({ name: 'Dream Places', path: '/dream-places' });
+            navLinks.push({ name: 'Profile', path: '/profile' });
+        }
+
         if (user.role === 'admin') {
+            navLinks.push({ name: 'Dashboard', path: '/admin' });
             navLinks.push({ name: 'Users', path: '/admin/users' });
             navLinks.push({ name: 'Approvals', path: '/admin/approvals' });
             navLinks.push({
@@ -49,32 +54,32 @@ const Navbar = () => {
 
     return (
         <div className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
-            <div className="max-w-6xl mx-auto flex items-center gap-3">
+            <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 md:gap-4 pointer-events-none w-full">
 
                 {/* ═══ LEFT ISLAND — Logo + Nav ═══ */}
-                <div className="pointer-events-auto flex-1 flex items-center h-12 px-2 rounded-full
+                <div className="pointer-events-auto flex items-center h-16 w-full max-w-[90%] md:max-w-fit px-2 rounded-full
                     bg-white/80 backdrop-blur-xl
                     border border-slate-200/60
                     shadow-[0_2px_20px_rgba(0,0,0,0.06),0_0_40px_rgba(0,0,0,0.03)]
-                    transition-all duration-500 ease-out"
+                    transition-all duration-500 ease-out flex-shrink-0"
                 >
                     {/* Logo */}
                     <Link to="/" className="flex items-center pl-3 pr-3 group" onClick={() => setIsMobileMenuOpen(false)}>
-                        <span className="font-logo text-xl tracking-tight text-slate-800 select-none">
+                        <span className="font-logo text-2xl tracking-tight text-slate-800 select-none">
                             trave<span className="italic text-emerald-600">Log</span>
                         </span>
                     </Link>
 
                     {/* Separator */}
-                    <div className="hidden md:block w-px h-5 bg-slate-200 mx-1" />
+                    <div className="hidden md:block w-px h-6 bg-slate-200 mx-2" />
 
                     {/* Desktop nav links */}
-                    <div className="hidden md:flex items-center justify-between flex-1 px-4">
+                    <div className="hidden md:flex items-center justify-center gap-1 px-1">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 flex items-center gap-2 ${isActive(link.path)
+                                className={`px-2.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${isActive(link.path)
                                     ? 'bg-emerald-50 text-emerald-700 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                                     }`}
@@ -86,59 +91,68 @@ const Navbar = () => {
                     </div>
 
                     {/* Mobile controls */}
-                    <div className="flex items-center gap-1 ml-auto md:hidden">
-                        {unreadCount > 0 && (
-                            <Link to="/admin" className="p-2 text-emerald-500">
-                                <Bell className="h-4 w-4 animate-bounce" />
+                    <div className="flex items-center gap-2 ml-auto md:hidden pr-1">
+                        {unreadCount > 0 && user?.role === 'admin' && (
+                            <Link to="/admin/notifications" className="p-2 text-emerald-500">
+                                <Bell className="h-5 w-5 animate-bounce" />
                             </Link>
                         )}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
                         >
-                            {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                         </button>
                     </div>
                 </div>
 
                 {/* ═══ RIGHT ISLAND — Auth ═══ */}
-                <div className="pointer-events-auto hidden md:flex items-center h-12 px-1.5 rounded-full
+                <div className="pointer-events-auto hidden md:flex items-center h-16 px-1.5 rounded-full
                     bg-white/80 backdrop-blur-xl
                     border border-slate-200/60
                     shadow-[0_2px_20px_rgba(0,0,0,0.06),0_0_40px_rgba(0,0,0,0.03)]
-                    transition-all duration-500 ease-out"
+                    transition-all duration-500 ease-out ml-4"
                 >
                     {user ? (
-                        <div className="flex items-center gap-1">
-                            <Link to="/profile" className="flex items-center gap-2 pl-3 pr-2 hover:bg-slate-50 rounded-full py-1 transition-colors">
-                                <div className="w-6 h-6 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
-                                    <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
+                        <div className="flex items-center gap-2">
+                            {user.role === 'user' ? (
+                                <Link to="/profile" className="flex items-center gap-2.5 px-3 hover:bg-slate-50 rounded-full py-1.5 transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
+                                        <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
+                                    </div>
+                                    <span className="text-[14px] font-medium text-slate-700 max-w-[120px] truncate">{user.displayName}</span>
+                                </Link>
+                            ) : (
+                                <div className="flex items-center gap-2.5 px-3 py-1.5">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
+                                        <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
+                                    </div>
+                                    <span className="text-[14px] font-bold text-slate-700 max-w-[120px] truncate">{user.displayName}</span>
                                 </div>
-                                <span className="text-[13px] font-medium text-slate-600 max-w-[100px] truncate">{user.displayName}</span>
-                            </Link>
+                            )}
                             <button
                                 onClick={handleLogout}
-                                className="p-2 mr-0.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200"
+                                className="p-2.5 mr-1 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200"
                                 title="Logout"
                             >
-                                <LogOut className="h-4 w-4" />
+                                <LogOut className="h-5 w-5" />
                             </button>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2 px-1">
                             <Link
                                 to="/login"
-                                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all duration-200"
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[14px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all duration-200"
                             >
-                                <LogIn className="w-3.5 h-3.5" />
-                                Log In
+                                <LogIn className="w-4 h-4" />
+                                <span>Log In</span>
                             </Link>
                             <Link
                                 to="/register"
-                                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-all duration-200 shadow-sm"
+                                className="flex items-center gap-1.5 px-5 py-2 rounded-full text-[14px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-all duration-200 shadow-sm"
                             >
-                                <Sparkles className="w-3.5 h-3.5" />
-                                Sign Up
+                                <Sparkles className="w-4 h-4" />
+                                <span>Sign Up</span>
                             </Link>
                         </div>
                     )}
@@ -171,16 +185,18 @@ const Navbar = () => {
 
                         {user ? (
                             <div className="mt-2 pt-2 border-t border-slate-100">
-                                <Link
-                                    to="/profile"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center gap-3 px-4 mb-2 hover:bg-slate-50 py-2 rounded-xl transition-all"
-                                >
-                                    <div className="w-7 h-7 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
-                                        <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
-                                    </div>
-                                    <span className="font-semibold text-slate-700 text-sm">{user.displayName} (Profile)</span>
-                                </Link>
+                                {user.role === 'user' && (
+                                    <Link
+                                        to="/profile"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 mb-2 hover:bg-slate-50 py-2 rounded-xl transition-all"
+                                    >
+                                        <div className="w-7 h-7 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
+                                            <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
+                                        </div>
+                                        <span className="font-semibold text-slate-700 text-sm">{user.displayName} (Profile)</span>
+                                    </Link>
+                                )}
                                 <button
                                     onClick={handleLogout}
                                     className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50 rounded-xl transition-all"

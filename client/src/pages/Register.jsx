@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 
 const Register = () => {
     const [formData, setFormData] = useState({
-        username: '',
+        name: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -30,7 +30,7 @@ const Register = () => {
 
         setIsSubmitting(true);
         const result = await register({
-            username: formData.username,
+            name: formData.name,
             email: formData.email,
             password: formData.password
         });
@@ -89,17 +89,17 @@ const Register = () => {
                     <form className="space-y-4" onSubmit={handleSubmit}>
                         <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">
-                                Username
+                                Full Name
                             </label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <User className="h-4 w-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                 </div>
                                 <input
-                                    name="username"
+                                    name="name"
                                     type="text"
                                     required
-                                    value={formData.username}
+                                    value={formData.name}
                                     onChange={handleChange}
                                     className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                                 />

@@ -27,7 +27,7 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.register = catchAsync(async (req, res, next) => {
     const newUser = await User.create({
-        username: req.body.username,
+        name: req.body.name,
         email: req.body.email,
         password: req.body.password,
         authProvider: 'local'
@@ -72,7 +72,7 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
     if (!user) {
         // Create new google user
         user = await User.create({
-            username: name || email.split('@')[0],
+            name: name || email.split('@')[0],
             email: email,
             authProvider: 'google',
             // Password is not required for google auth based on our schema logic
