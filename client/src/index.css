@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts — Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+    body {
+        background-color: #f8fafc;
+        color: #1e293b;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+
+    html.dark body {
+        background-color: #0b1120;
+        color: #f1f5f9;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    :focus-visible {
+        outline: 2px solid #10b981;
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+        @apply px-5 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl shadow-md hover:shadow-glow hover:from-primary-600 hover:to-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:ring-offset-2 transition-all duration-300 font-semibold text-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md;
+    }
+
+    .btn-secondary {
+        @apply px-5 py-2.5 text-slate-700 border border-slate-200 rounded-xl shadow-sm hover:border-primary-200 hover:text-primary-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-400/30 focus:ring-offset-2 transition-all duration-300 font-semibold text-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+    }
+
+    html.dark .btn-secondary {
+        background-color: rgba(19, 34, 24, 0.8);
+        color: #ecfdf5;
+        border-color: #2d4a3a;
+    }
+
+    html.dark .btn-secondary:hover {
+        background-color: #1a2e22;
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-danger {
+        @apply px-5 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-xl shadow-md hover:shadow-lg hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400/50 focus:ring-offset-2 transition-all duration-300 font-semibold text-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+        @apply rounded-2xl shadow-soft border border-slate-100/80 overflow-hidden transition-all duration-300;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+    }
+
+    html.dark .card {
+        background-color: rgba(19, 34, 24, 0.8);
+        border-color: rgba(25, 50, 35, 0.6);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-hover {
+        @apply rounded-2xl shadow-soft border border-slate-100/80 overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+    }
+
+    html.dark .card-hover {
+        background-color: rgba(19, 34, 24, 0.8);
+        border-color: rgba(25, 50, 35, 0.6);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    html.dark .card-hover:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        border-color: rgba(45, 74, 58, 0.8);
+    }
+
+    /* ===== INPUTS ===== */
+    .input-field {
+        @apply w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 outline-none transition-all duration-300;
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(4px);
+    }
+
+    html.dark .input-field {
+        background-color: rgba(19, 34, 24, 0.6);
+        border-color: #2d4a3a;
+        color: white;
+    }
+
+    html.dark .input-field::placeholder {
+        color: #6b8a7a;
+    }
+
+    html.dark .input-field:focus {
+        border-color: rgba(16, 185, 129, 0.6);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+    }
+
+    /* ===== GLASSMORPHISM ===== */
+    .glass {
+        @apply shadow-soft;
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    html.dark .glass {
+        background-color: rgba(19, 34, 24, 0.7);
+        border-color: rgba(25, 50, 35, 0.4);
+    }
+
+    /* ===== BADGE ===== */
+    .badge {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider;
+    }
+
+    .badge-pending {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700;
+    }
+
+    html.dark .badge-pending {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .badge-approved {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700;
+    }
+
+    html.dark .badge-approved {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .badge-rejected {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-700;
+    }
+
+    html.dark .badge-rejected {
+        background-color: rgba(244, 63, 94, 0.15);
+        color: #fb7185;
+    }
+
+    /* ===== SECTION ===== */
+    .section-heading {
+        @apply text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900;
+    }
+
+    html.dark .section-heading {
+        color: white;
+    }
+
+    .section-subheading {
+        @apply mt-4 text-lg text-slate-500 max-w-2xl;
+    }
+
+    html.dark .section-subheading {
+        color: #94a3b8;
+    }
+}
+
+/* ===== CUSTOM SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* ===== GRADIENT TEXT ===== */
+.gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 via-accent-500 to-primary-400;
+}
+
+/* ===== NATURE DARK SCROLLBAR ===== */
+html.dark ::-webkit-scrollbar-thumb {
+    background: #2d4a3a;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #3d6a4e;
+}
