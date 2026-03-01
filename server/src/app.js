@@ -29,8 +29,24 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Implement CORS
-app.use(cors());
+// Implement CORS — allow Vercel frontend and localhost dev
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://travelog-sandy.vercel.app',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, Postman)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error(`CORS: origin ${origin} not allowed`));
+        }
+    },
+    credentials: true
+}));
 
 // 2) ROUTES
 app.get('/api/v1/health', (req, res) => {
