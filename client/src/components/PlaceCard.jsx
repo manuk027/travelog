@@ -21,7 +21,7 @@ const PlaceCard = ({ place }) => {
 
                     {/* Hover action */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-full px-5 py-2.5 flex items-center gap-2 shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full px-5 py-2.5 flex items-center gap-2 shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                             <Eye className="w-4 h-4 text-primary-600" />
                             <span className="text-sm font-semibold text-primary-700">View Details</span>
                         </div>

@@ -1,20 +1,19 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Menu, X, Sparkles, LogIn, Bell, Map } from 'lucide-react';
-import { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { useSocket } from '../context/SocketContext';
+import { LogOut, Sparkles, LogIn, Bell, Sun, Moon } from 'lucide-react';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
     const { unreadCount } = useSocket();
+    const { isDarkMode, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
-        setIsMobileMenuOpen(false);
     };
 
     const navLinks = [
@@ -29,8 +28,8 @@ const Navbar = () => {
             navLinks.push({ name: 'Dream Places', path: '/dream-places' });
             navLinks.push({ name: 'Profile', path: '/profile' });
         }
-
         if (user.role === 'admin') {
+            navLinks.push({ name: 'Add Place', path: '/add-place' });
             navLinks.push({ name: 'Dashboard', path: '/admin' });
             navLinks.push({ name: 'Users', path: '/admin/users' });
             navLinks.push({ name: 'Approvals', path: '/admin/approvals' });
@@ -53,25 +52,25 @@ const Navbar = () => {
     const isActive = (path) => location.pathname === path;
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
+        <div className="hidden md:block fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none">
             <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 md:gap-4 pointer-events-none w-full">
 
                 {/* ═══ LEFT ISLAND — Logo + Nav ═══ */}
                 <div className="pointer-events-auto flex items-center h-16 w-full max-w-[90%] md:max-w-fit px-2 rounded-full
-                    bg-white/80 backdrop-blur-xl
-                    border border-slate-200/60
+                    bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl
+                    border border-slate-200/60 dark:border-slate-700/60
                     shadow-[0_2px_20px_rgba(0,0,0,0.06),0_0_40px_rgba(0,0,0,0.03)]
                     transition-all duration-500 ease-out flex-shrink-0"
                 >
                     {/* Logo */}
-                    <Link to="/" className="flex items-center pl-3 pr-3 group" onClick={() => setIsMobileMenuOpen(false)}>
-                        <span className="font-logo text-2xl tracking-tight text-slate-800 select-none">
+                    <Link to="/" className="flex items-center pl-3 pr-3 group">
+                        <span className="font-logo text-2xl tracking-tight text-slate-800 dark:text-white select-none">
                             trave<span className="italic text-emerald-600">Log</span>
                         </span>
                     </Link>
 
                     {/* Separator */}
-                    <div className="hidden md:block w-px h-6 bg-slate-200 mx-2" />
+                    <div className="hidden md:block w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2" />
 
                     {/* Desktop nav links */}
                     <div className="hidden md:flex items-center justify-center gap-1 px-1">
@@ -80,8 +79,8 @@ const Navbar = () => {
                                 key={link.path}
                                 to={link.path}
                                 className={`px-2.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${isActive(link.path)
-                                    ? 'bg-emerald-50 text-emerald-700 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                             >
                                 {link.name}
@@ -90,49 +89,58 @@ const Navbar = () => {
                         ))}
                     </div>
 
-                    {/* Mobile controls */}
-                    <div className="flex items-center gap-2 ml-auto md:hidden pr-1">
+                    {/* Admin bell on mobile (so it's accessible without bottom nav) */}
+                    <div className="flex items-center gap-2 ml-auto md:hidden pr-2">
                         {unreadCount > 0 && user?.role === 'admin' && (
                             <Link to="/admin/notifications" className="p-2 text-emerald-500">
                                 <Bell className="h-5 w-5 animate-bounce" />
                             </Link>
                         )}
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
-                        >
-                            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                        </button>
                     </div>
                 </div>
 
-                {/* ═══ RIGHT ISLAND — Auth ═══ */}
+                {/* ═══ RIGHT ISLAND — Theme Toggle + Auth (desktop only) ═══ */}
                 <div className="pointer-events-auto hidden md:flex items-center h-16 px-1.5 rounded-full
-                    bg-white/80 backdrop-blur-xl
-                    border border-slate-200/60
+                    bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl
+                    border border-slate-200/60 dark:border-slate-700/60
                     shadow-[0_2px_20px_rgba(0,0,0,0.06),0_0_40px_rgba(0,0,0,0.03)]
                     transition-all duration-500 ease-out ml-4"
                 >
+                    {/* Theme toggle button */}
+                    <button
+                        onClick={toggleTheme}
+                        title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                        className="p-2.5 rounded-full text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all duration-200 ml-1"
+                    >
+                        {isDarkMode
+                            ? <Sun className="h-[18px] w-[18px]" />
+                            : <Moon className="h-[18px] w-[18px]" />
+                        }
+                    </button>
+
+                    {/* Separator */}
+                    <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
+
                     {user ? (
                         <div className="flex items-center gap-2">
                             {user.role === 'user' ? (
-                                <Link to="/profile" className="flex items-center gap-2.5 px-3 hover:bg-slate-50 rounded-full py-1.5 transition-colors">
+                                <Link to="/profile" className="flex items-center gap-2.5 px-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full py-1.5 transition-colors">
                                     <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
                                         <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
                                     </div>
-                                    <span className="text-[14px] font-medium text-slate-700 max-w-[120px] truncate">{user.displayName}</span>
+                                    <span className="text-[14px] font-medium text-slate-700 dark:text-slate-200 max-w-[120px] truncate">{user.displayName}</span>
                                 </Link>
                             ) : (
                                 <div className="flex items-center gap-2.5 px-3 py-1.5">
                                     <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
                                         <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
                                     </div>
-                                    <span className="text-[14px] font-bold text-slate-700 max-w-[120px] truncate">{user.displayName}</span>
+                                    <span className="text-[14px] font-bold text-slate-700 dark:text-slate-200 max-w-[120px] truncate">{user.displayName}</span>
                                 </div>
                             )}
                             <button
                                 onClick={handleLogout}
-                                className="p-2.5 mr-1 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200"
+                                className="p-2.5 mr-1 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all duration-200"
                                 title="Logout"
                             >
                                 <LogOut className="h-5 w-5" />
@@ -142,7 +150,7 @@ const Navbar = () => {
                         <div className="flex items-center gap-2 px-1">
                             <Link
                                 to="/login"
-                                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[14px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all duration-200"
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[14px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200"
                             >
                                 <LogIn className="w-4 h-4" />
                                 <span>Log In</span>
@@ -157,75 +165,8 @@ const Navbar = () => {
                         </div>
                     )}
                 </div>
+
             </div>
-
-            {/* ═══ MOBILE DROPDOWN ═══ */}
-            {isMobileMenuOpen && (
-                <div className="pointer-events-auto mt-2 mx-auto max-w-6xl
-                    bg-white/95 backdrop-blur-xl
-                    border border-slate-200/60
-                    rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)]
-                    animate-slide-down overflow-hidden"
-                >
-                    <div className="px-3 pt-3 pb-3 space-y-0.5">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.path}
-                                to={link.path}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive(link.path)
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                                    }`}
-                            >
-                                {link.name}
-                                {link.extra}
-                            </Link>
-                        ))}
-
-                        {user ? (
-                            <div className="mt-2 pt-2 border-t border-slate-100">
-                                {user.role === 'user' && (
-                                    <Link
-                                        to="/profile"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 px-4 mb-2 hover:bg-slate-50 py-2 rounded-xl transition-all"
-                                    >
-                                        <div className="w-7 h-7 rounded-full bg-slate-100 overflow-hidden shadow-inner flex items-center justify-center">
-                                            <img src={user.avatar} alt={user.displayName} className="w-full h-full object-cover" />
-                                        </div>
-                                        <span className="font-semibold text-slate-700 text-sm">{user.displayName} (Profile)</span>
-                                    </Link>
-                                )}
-                                <button
-                                    onClick={handleLogout}
-                                    className="flex items-center w-full px-4 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                                >
-                                    <LogOut className="h-4 w-4 mr-2" />
-                                    Logout
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="mt-2 pt-2 border-t border-slate-100 flex gap-2 px-1">
-                                <Link
-                                    to="/login"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-slate-500 border border-slate-200 hover:bg-slate-50 transition-all"
-                                >
-                                    Log In
-                                </Link>
-                                <Link
-                                    to="/register"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-all"
-                                >
-                                    Sign Up
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

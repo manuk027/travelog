@@ -26,13 +26,21 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 exports.register = catchAsync(async (req, res, next) => {
-    const newUser = await User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        authProvider: 'local'
-    });
+    const { name, email, password } = req.body;
 
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        if (existingUser.authProvider === 'google') {
+            return next(new AppError(
+                'This email is linked to a Google account. Please use the \'Sign in with Google\' button instead.',
+                409
+            ));
+        }
+        return next(new AppError('An account with this email already exists. Please log in.', 409));
+    }
+
+    const newUser = await User.create({ name, email, password, authProvider: 'local' });
     createSendToken(newUser, 201, res);
 });
 

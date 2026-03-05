@@ -9,6 +9,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Components
 import Navbar from './components/Navbar';
+import MobileNav from './components/MobileNav';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 
@@ -35,13 +36,13 @@ function App() {
                 <AuthProvider>
                     <SocketProvider>
                         <Router>
-                            <div className="min-h-screen flex flex-col bg-slate-50 transition-colors duration-200">
+                            <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
                                 <Navbar />
 
-                                <main className="flex-grow pt-20 sm:pt-24">
+                                <main className="flex-grow md:pt-20 md:pt-24 pb-20 md:pb-0">
                                     <Routes>
                                         {/* Public Routes */}
-                                        <Route path="/" element={<div className="-mt-20 sm:-mt-24"><Home /></div>} />
+                                        <Route path="/" element={<div className="md:-mt-20 md:-mt-24"><Home /></div>} />
                                         <Route path="/explore" element={<Explore />} />
                                         <Route path="/places/:id" element={<PlaceDetails />} />
 
@@ -69,6 +70,8 @@ function App() {
                                         <Route path="*" element={<Home />} />
                                     </Routes>
                                 </main>
+
+                                <MobileNav />
 
                                 {/* Global Toast Notifications */}
                                 <ToastContainer

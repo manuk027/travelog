@@ -55,18 +55,18 @@ const DreamPlaces = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 mb-2">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 mb-2">
                         <Sparkles className="w-3 h-3" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Wishlist</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Wishlist</span>
                     </div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                         Dream <span className="text-emerald-600">Places</span>
                     </h1>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                         {dreamPlaces.length} locations on your wishlist.
                     </p>
                 </div>
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm">
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
                     <Heart className="w-5 h-5 fill-emerald-500" />
                 </div>
             </div>

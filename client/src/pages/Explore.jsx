@@ -57,25 +57,26 @@ const Explore = () => {
     };
 
     const clearLocation = () => setFilters({ ...filters, lat: '', lng: '', distance: '' });
-    const activeFilterCount = [filters.search, filters.country, filters.state, filters.lat].filter(Boolean).length;
+    const activeFilterCount = [filters.search, filters.country, filters.state, filters.district, filters.lat].filter(Boolean).length;
+    const clearAllFilters = () => setFilters({ search: '', country: '', state: '', district: '', distance: '', lat: '', lng: '' });
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-            {/* Page Header — matches DreamPlaces / VisitedPlaces style */}
+            {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 mb-2">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 mb-2">
                         <Sparkles className="w-3 h-3" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Discover</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Discover</span>
                     </div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                         Explore <span className="text-emerald-600">Places</span>
                     </h1>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                         {places.length} destinations shared by our community
                     </p>
                 </div>
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm">
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
                     <Compass className="w-5 h-5" />
                 </div>
             </div>
@@ -83,46 +84,55 @@ const Explore = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
                 {/* Filters Sidebar */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white border border-slate-100 rounded-xl p-4 sticky top-20 shadow-sm">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl p-4 sticky top-20 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-1.5 text-slate-800">
+                            <div className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
                                 <Filter className="w-4 h-4 text-emerald-500" />
                                 <h2 className="text-sm font-bold">Filters</h2>
                             </div>
                             {activeFilterCount > 0 && (
-                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                    {activeFilterCount} active
-                                </span>
+                                <button
+                                    onClick={clearAllFilters}
+                                    className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-full transition-colors"
+                                >
+                                    <X className="w-2.5 h-2.5" />
+                                    Clear all
+                                </button>
                             )}
                         </div>
 
                         <div className="space-y-3">
                             <div>
-                                <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">Search</label>
+                                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Search</label>
                                 <div className="relative">
                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                                     <input type="text" name="search" placeholder="E.g. forest trail" value={filters.search} onChange={handleFilterChange}
-                                        className="w-full pl-8 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                                        className="w-full pl-8 pr-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:text-slate-200 dark:placeholder-slate-500" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">Country</label>
+                                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Country</label>
                                 <input type="text" name="country" placeholder="Any country" value={filters.country} onChange={handleFilterChange}
-                                    className="w-full px-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                                    className="w-full px-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:text-slate-200 dark:placeholder-slate-500" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">State / Province</label>
+                                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">State / Province</label>
                                 <input type="text" name="state" placeholder="Any state" value={filters.state} onChange={handleFilterChange}
-                                    className="w-full px-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                                    className="w-full px-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:text-slate-200 dark:placeholder-slate-500" />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">District</label>
+                                <input type="text" name="district" placeholder="Any district" value={filters.district} onChange={handleFilterChange}
+                                    className="w-full px-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:text-slate-200 dark:placeholder-slate-500" />
                             </div>
 
                             {/* Nearby */}
-                            <div className="pt-3 border-t border-slate-100">
-                                <label className="block text-[10px] font-semibold text-slate-500 mb-2 uppercase tracking-wider">Find Nearby</label>
+                            <div className="pt-3 border-t border-slate-100 dark:border-slate-700">
+                                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Find Nearby</label>
                                 {filters.lat && filters.lng ? (
                                     <div className="space-y-2">
-                                        <div className="flex items-center justify-between text-xs bg-emerald-50 px-3 py-2 rounded-lg">
-                                            <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                                        <div className="flex items-center justify-between text-xs bg-emerald-50 dark:bg-emerald-900/30 px-3 py-2 rounded-lg">
+                                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                                                 <MapPin className="w-3 h-3" /> Location set
                                             </span>
                                             <button onClick={clearLocation} className="text-rose-500 font-semibold flex items-center gap-0.5 text-[10px]">
@@ -132,15 +142,15 @@ const Explore = () => {
                                         <div>
                                             <div className="flex justify-between text-[10px] text-slate-400 mb-1">
                                                 <span>Distance</span>
-                                                <span className="font-semibold text-emerald-600">{filters.distance} km</span>
+                                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">{filters.distance} km</span>
                                             </div>
                                             <input type="range" name="distance" min="5" max="500" step="5" value={filters.distance} onChange={handleFilterChange}
-                                                className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-500" />
+                                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full appearance-none cursor-pointer accent-emerald-500" />
                                         </div>
                                     </div>
                                 ) : (
                                     <button onClick={getUserLocation} disabled={isLocating}
-                                        className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-all disabled:opacity-60">
+                                        className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg transition-all disabled:opacity-60">
                                         {isLocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
                                         Use My Location
                                     </button>
@@ -150,7 +160,7 @@ const Explore = () => {
                     </div>
                 </div>
 
-                {/* Places Grid — compact overlay cards, consistent with VisitedPlaces & DreamPlaces */}
+                {/* Places Grid */}
                 <div className="lg:col-span-3">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center h-64">
@@ -158,24 +168,24 @@ const Explore = () => {
                             <p className="text-xs text-slate-400 mt-3 font-medium">Discovering places…</p>
                         </div>
                     ) : places.length === 0 ? (
-                        <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl py-14 flex flex-col items-center justify-center text-center px-4">
-                            <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-300 mb-4 border border-slate-100">
+                        <div className="bg-slate-50 dark:bg-slate-800 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl py-14 flex flex-col items-center justify-center text-center px-4">
+                            <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center text-slate-300 dark:text-slate-500 mb-4 border border-slate-100 dark:border-slate-600">
                                 <Compass className="w-6 h-6" />
                             </div>
-                            <h3 className="text-base font-black text-slate-800 mb-1">No places found</h3>
-                            <p className="text-xs text-slate-500 max-w-xs">Try adjusting your filters or share the first place here!</p>
+                            <h3 className="text-base font-black text-slate-800 dark:text-white mb-1">No places found</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">Try adjusting your filters or share the first place here!</p>
                         </div>
                     ) : (
                         <>
                             <p className="text-xs text-slate-400 font-medium mb-3">
-                                <span className="font-bold text-slate-700">{places.length}</span> place{places.length !== 1 ? 's' : ''} · Page {currentPage} of {totalPages}
+                                <span className="font-bold text-slate-700 dark:text-slate-300">{places.length}</span> place{places.length !== 1 ? 's' : ''} · Page {currentPage} of {totalPages}
                             </p>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {paginatedPlaces.map((place) => (
                                     <Link
                                         key={place._id}
                                         to={`/places/${place._id}`}
-                                        className="group bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+                                        className="group bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
                                     >
                                         <div className="aspect-[4/3] relative overflow-hidden">
                                             <img

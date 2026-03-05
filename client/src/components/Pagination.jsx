@@ -23,7 +23,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 aria-label="Previous page"
             >
                 <ChevronLeft className="w-4 h-4" />
@@ -39,8 +39,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         key={page}
                         onClick={() => onPageChange(page)}
                         className={`min-w-[36px] h-9 px-2.5 rounded-lg text-sm font-semibold transition-all border ${page === currentPage
-                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-100'
-                                : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-100'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                     >
                         {page}
@@ -51,7 +51,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 aria-label="Next page"
             >
                 <ChevronRight className="w-4 h-4" />
